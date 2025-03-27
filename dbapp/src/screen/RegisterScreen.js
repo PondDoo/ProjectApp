@@ -29,12 +29,14 @@ const RegisterScreen = ({ navigation }) => {
           placeholder={"Username"}
           value={username}
           onChangeText={setUsername}
+          icons={"user"}
         />
         <SearchBox
           placeholder={"Password"}
           secure={true}
           value={password}
           onChangeText={setPassword}
+          icons={"lock"}
         />
         <CustomButton
           title={"Register"}

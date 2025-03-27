@@ -44,11 +44,10 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-    <Text> Welcome Back!</Text>
+    <Text style = {styles.header}> Welcome Back!</Text>
       <View style={styles.flame}>
-        <Text style={styles.title}>Login</Text>
-        <SearchBox placeholder={"Username"} value={username} onChangeText={setUsername} />
-        <SearchBox placeholder={"Password"} secure={true} value={password} onChangeText={setPassword} />
+        <SearchBox placeholder={"Username"} value={username} onChangeText={setUsername} icons={"user"}/>
+        <SearchBox placeholder={"Password"} secure={true} value={password} onChangeText={setPassword} icons={"lock"} />
         <CustomButton title={"Log in"} backgroundColor={"#FF9D23"} onPress={handleLogin} />
         <CustomButton title={"Register"} backgroundColor={"#C14600"} onPress={() => navigation.navigate("Register")} />
       </View>
@@ -74,6 +73,10 @@ const styles = StyleSheet.create({
     padding: 15,
     paddingTop: 20,
   },
+  header:{
+    fontSize:40,
+    fontWeight:"bold",
+  }
 });
 
 export default LoginScreen;
