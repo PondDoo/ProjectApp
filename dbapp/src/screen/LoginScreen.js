@@ -44,6 +44,7 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+    <Text> Welcome Back!</Text>
       <View style={styles.flame}>
         <Text style={styles.title}>Login</Text>
         <SearchBox placeholder={"Username"} value={username} onChangeText={setUsername} />
