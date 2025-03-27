@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet ,TouchableOpacity} from "react-native";
 import CustomButton from "../component/custombutton";
 import SearchBox from "../component/SearchBox";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -49,7 +49,12 @@ const LoginScreen = ({ navigation }) => {
         <SearchBox placeholder={"Username"} value={username} onChangeText={setUsername} icons={"user"}/>
         <SearchBox placeholder={"Password"} secure={true} value={password} onChangeText={setPassword} icons={"lock"} />
         <CustomButton title={"Log in"} backgroundColor={"#FF9D23"} onPress={handleLogin} />
-        <CustomButton title={"Register"} backgroundColor={"#C14600"} onPress={() => navigation.navigate("Register")} />
+        <View style={styles.titleStyle}>
+          <Text style = {styles.textStyle}>Create An Account </Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+            <Text style = {styles.signupStyle}>Sign up</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <Toast />
     </View>
@@ -61,21 +66,35 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "#ffe0b2",
+    backgroundColor: "white",
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
   },
   flame: {
-    backgroundColor: "#fff8e1",
     borderRadius: 20,
     padding: 15,
-    paddingTop: 20,
   },
   header:{
     fontSize:40,
     fontWeight:"bold",
+    marginTop:20,
+  },
+  titleStyle:{
+    flexDirection:"row",
+    justifyContent:"center",
+    margin:10,
+  },
+  textStyle:{
+    fontSize:16,
+    fontWeight:"600"
+  },
+  signupStyle:{
+    color:"red",
+    fontSize:16,
+    fontWeight:"600",
+    textDecorationLine:"underline"
   }
 });
 
