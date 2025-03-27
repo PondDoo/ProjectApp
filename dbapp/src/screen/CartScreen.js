@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Button,Image } from 'react-native';
-import { fetchCartItems } from '../services/api';  // import ฟังก์ชันจาก api.js
+import { View, Text, StyleSheet, FlatList, Button, TouchableOpacity, Alert, Image } from 'react-native';
+import { fetchCartItems, removeFromCart } from '../services/api';  // import ฟังก์ชันจาก api.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CartScreen = ({ navigation }) => {
@@ -23,6 +23,24 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
+// ฟังก์ชันสำหรับลบสินค้าออกจากตะกร้า
+const handleRemoveFromCart = async (productId) => {
+  try {
+    if (userId) {
+      // เรียก API เพื่อลบสินค้าออกจากตะกร้า
+      await removeFromCart(userId, productId); 
+      Alert.alert("Product removed from cart");  // แจ้งผู้ใช้ว่าสินค้าได้ถูกลบ
+      // ดึงข้อมูลตะกร้าใหม่หลังจากลบสินค้า
+      getCartItems(); 
+    } else {
+      Alert.alert("User not logged in");
+    }
+  } catch (error) {
+    console.error("Error removing product from cart:", error);
+    Alert.alert("Failed to remove product from cart");
+  }
+};
+
   // ดึงข้อมูลตะกร้าของผู้ใช้
   const getCartItems = async () => {
     if (!userId) return;  // หากไม่มี userId, ไม่ต้องดึงข้อมูลตะกร้า
@@ -39,6 +57,9 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
+  // ฟังก์ชันสำหรับลบสินค้าออกจากตะกร้า
+  
+
   useEffect(() => {
     getUserId();  // ดึง userId เมื่อหน้าโหลด
   }, []);
@@ -51,28 +72,29 @@ const CartScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.title}>Your Cart</Text> */}
-      
       {loading ? (
         <Text>กำลังโหลดข้อมูล...</Text>  // แสดงข้อความขณะโหลดข้อมูล
       ) : (
         <FlatList
-  data={cartItems}
-  keyExtractor={(item, index) => `${item.id}-${index}`}  // ใช้ทั้ง item.id และ index เพื่อสร้างคีย์ที่ไม่ซ้ำ
-  renderItem={({ item }) => (
-    <View style={styles.item}>
-      {/* ตรวจสอบว่ามีค่า item_name ก่อน */}
-      <Text>{item.item_name ? item.item_name : 'No Name Available'}</Text>  
-      {/* ตรวจสอบว่า price มีค่าหรือไม่ */}
-      <Text>Price: ${item.price ? item.price : 0}</Text>
-      {/* ตรวจสอบว่า quantity มีค่าหรือไม่ */}
-      <Text>Quantity: {item.quantity ? item.quantity : 1}</Text>
-    </View>
-  )}
-/>
+          data={cartItems}
+          keyExtractor={(item) => (item.product_id ? item.product_id.toString() : `${item.item_name || 'No Name Available'}`)}  // ใช้ product_id เป็น key ของแต่ละรายการ
+          renderItem={({ item }) => (
+            <View style={styles.item}>
+              <Image source={{ uri: item.image_url }} style={styles.image} />
+              <Text>{item.item_name ? item.item_name : 'No Name Available'}</Text>
+              <Text>Price: ${item.price ? item.price : 0}</Text>
+              <Text>Quantity: {item.quantity ? item.quantity : 1}</Text>
 
-
-
+              {/* ปุ่ม Remove from Cart */}
+              <TouchableOpacity 
+                style={styles.removeButton} 
+                onPress={() => handleRemoveFromCart(item.product_id)} // เมื่อกดปุ่ม จะเรียก handleRemoveFromCart โดยส่ง product_id
+              >
+                <Text style={styles.removeButtonText}>Remove from Cart</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
       )}
 
       <View style={styles.summary}>
@@ -92,28 +114,34 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#FFF7F3",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
   item: {
     marginBottom: 15,
     padding: 10,
     backgroundColor: "#f9f9f9",
     borderRadius: 5,
   },
-  summary: {
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-    paddingTop: 10,
-  },
   image: {
     width: 100,
     height: 100,
     marginTop: 10,
     resizeMode: 'contain', // เพื่อให้รูปแสดงตามขนาดที่กำหนด
+  },
+  removeButton: {
+    backgroundColor: "#FF5733",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  removeButtonText: {
+    color: "#fff",
+    fontWeight: 'bold',
+  },
+  summary: {
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+    paddingTop: 10,
   },
 });
 

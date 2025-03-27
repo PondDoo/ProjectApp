@@ -354,3 +354,28 @@ app.post("/add-to-market", async (req, res) => {
   }
 });
 
+// Route สำหรับลบสินค้าจากตะกร้า
+app.delete('/cart/:userId/item/:productId', async (req, res) => {
+  const { userId, productId } = req.params;
+  console.log(`Received DELETE request for userId: ${userId}, productId: ${productId}`);
+
+  try {
+    const query = `
+      DELETE FROM cart_items 
+      WHERE cart_id IN (SELECT cart_id FROM cart WHERE user_id = $1 AND status = 'pending')
+      AND product_id = $2
+      RETURNING *;
+    `;
+    const result = await pool.query(query, [userId, productId]);
+    console.log(result);  // เพิ่มการ log ของผลลัพธ์จากฐานข้อมูล
+
+    if (result.rowCount > 0) {
+      return res.status(200).json({ message: 'Product removed from cart' });
+    } else {
+      return res.status(404).json({ message: 'Product not found in cart' });
+    }
+  } catch (error) {
+    console.error('Error removing product from cart:', error);
+    return res.status(500).json({ message: 'Server error, please try again later' });
+  }
+});

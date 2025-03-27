@@ -47,7 +47,7 @@ const AdminScreen = () => {
       <Text>Total Price: ${item.total_price}</Text>
       <Text>Shipping Address: {item.shipping_address}</Text>
       <Text>Status: {item.status}</Text>
-      <Text>Date: {new Date(item.created_at).toLocaleString()}</Text>
+      {/* <Text>Date: {new Date(item.created_at).toLocaleString()}</Text> */}
     </View>
   );
 

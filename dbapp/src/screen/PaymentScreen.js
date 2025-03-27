@@ -84,7 +84,7 @@ const PaymentScreen = ({ navigation }) => {
         {/* แสดงรายการสินค้าจากตะกร้า */}
         {cartItems.map((item) => (
           <View style={styles.item} key={item.product_id}>
-            <Image source={{ uri: item.image_url }} style={styles.image} />
+            {/* <Image source={{ uri: item.image_url }} style={styles.image} /> */}
             <Text>{item.item_name}</Text>
             <Text>Price: ${item.price}</Text>
             <Text>Quantity: {item.quantity}</Text>

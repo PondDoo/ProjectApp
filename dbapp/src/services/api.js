@@ -113,3 +113,13 @@ export const addmarket = async (item_name ,price,image_url,item_detail,) => {
     throw new Error(error.response?.data?.message || "Error registering user");
   }
 };
+
+export const removeFromCart = async (userId, productId) => {
+  try {
+    const response = await axios.delete(`http://10.5.50.228:5000/cart/${userId}/item/${productId}`);
+    return response.data; // คืนค่าผลลัพธ์จาก API ถ้าลบสำเร็จ
+  } catch (error) {
+    console.error("Error removing from cart:", error);
+    throw error;  // ถ้ามีข้อผิดพลาดในการลบ ให้โยนข้อผิดพลาดไปที่ผู้ใช้
+  }
+};
