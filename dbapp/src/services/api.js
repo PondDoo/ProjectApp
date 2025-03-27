@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "ip";  // ใช้ URL ที่ตรงกับเซิร์ฟเวอร์ของคุณ
+const API_URL = "http://10.5.50.228:5000";  // ใช้ URL ที่ตรงกับเซิร์ฟเวอร์ของคุณ
 
 // ฟังก์ชันสำหรับการลงทะเบียนผู้ใช้
 export const registerUser = async (username, password) => {

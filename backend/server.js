@@ -13,7 +13,7 @@ const pool = new Pool({
   host: "localhost",  // หรือ URL ของ PostgreSQL
   port: 5432,
   user: "postgres",  // เปลี่ยนให้ตรงกับข้อมูลของคุณ
-  password: "รหัส",  // เปลี่ยนให้ตรงกับข้อมูลของคุณ
+  password: "4480",  // เปลี่ยนให้ตรงกับข้อมูลของคุณ
   database: "proapp",  // ชื่อฐานข้อมูล
 });
 
@@ -31,7 +31,9 @@ pool.query(
   `CREATE TABLE IF NOT EXISTS shopitems (
     id SERIAL PRIMARY KEY,
     item_name TEXT NOT NULL,
-    price REAL NOT NULL
+    price REAL NOT NULL,
+    image_url TEXT,
+    item_detail TEXT
 )`
 );
 

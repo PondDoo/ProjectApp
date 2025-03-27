@@ -18,10 +18,11 @@ const styles = StyleSheet.create({
     backgroundColor: "blue",
     padding: 10,
     alignItems: "center", // แก้ไขจาก alignItem เป็น alignItems
-    borderRadius: 5,
+    borderRadius: 15,
+    // marginBottom:10,
+    marginTop:10
   },
   text: {
-    // แก้ไขจาก text เป็น text (ต้องใช้ตัวพิมพ์เล็ก)
     color: "white",
     fontSize: 18,
     fontWeight: "bold",

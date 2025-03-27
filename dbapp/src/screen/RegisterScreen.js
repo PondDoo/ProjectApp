@@ -8,7 +8,7 @@ import { useNavigation } from "@react-navigation/native";
 const RegisterScreen = ({ navigation }) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-  
+
     const handleRegister = async () => {
       try {
         await registerUser(username, password);
@@ -18,9 +18,10 @@ const RegisterScreen = ({ navigation }) => {
         Alert.alert("Register Failed :", error.message);
       }
     };
-  
+
     return (
       <View style={styles.container}>
+        <View style={styles.flame}>
         <Text style={styles.title}>
           Registration {username} {password}
         </Text>
@@ -45,23 +46,29 @@ const RegisterScreen = ({ navigation }) => {
           backgroundColor={"#FF9D23"}
           onPress={() => navigation.navigate("Login")}
         />
+        </View>
       </View>
     );
   };
-  
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       //alignItems:"center",
       justifyContent: "center",
       padding: 20,
-      backgroundColor: "#FFF7F3",
+      backgroundColor: "#ffe0b2",
     },
     title: {
       fontSize: 20,
       fontWeight: "bold",
     },
+    flame: {
+      backgroundColor: "#fff8e1",
+      borderRadius: 20,
+      padding: 15,
+      paddingTop: 20,
+    },
   });
-  
+
   export default RegisterScreen;
-  

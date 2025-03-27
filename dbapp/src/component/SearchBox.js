@@ -18,25 +18,19 @@ const SearchBox =({placeholder,value,onChangeText,secure}) => {
 };
 
 const styles = StyleSheet.create ({
-    container : {
-        margin:10,
-        flexDirection:"row",
+    container: {
+        margin: 5,
+        flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "f5f5f5",
-        borderRadius:12,
-        paddingHorizontal:12,
-        height:45,
-        shadowColor:"#000",
-        shadowOffset:{width:0,height:2},
-        shadowOpacity:0.2,
-        shadowRadius:4,
-        elevation:3,
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        borderWidth: 2,  // กำหนดความหนาของกรอบ
+        borderColor: "#ccc",  // กำหนดสีของกรอบ
     },
     input: {
         padding:10,
         fontSize:18,
         borderColor:"#333",
-        borderWidth:1,
         borderRadius:10,
     }
 
