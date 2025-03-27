@@ -19,7 +19,7 @@ const SearchBox =({placeholder,value,onChangeText,secure,icons}) => {
 
 const styles = StyleSheet.create ({
     container: {
-        margin: 5,
+        marginTop: 20,
         flexDirection: "row",
         alignItems: "center",
         borderRadius: 10,
