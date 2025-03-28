@@ -155,7 +155,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#FFF7F3",
-    paddingTop: 35
   },
   item: {
     flexDirection: "row",
@@ -220,10 +219,10 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: "#FF9D23",
     padding: 10,
-    borderRadius: 15,
+    borderRadius: 10,
     alignItems: 'center',
     // marginTop: ,
-    elevation: 4, // เงาเพิ่มมิติให้ปุ่ม
+    elevation:5
   },
   checkoutText: {
     color: "#FFF",
