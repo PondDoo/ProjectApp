@@ -129,14 +129,19 @@ const HomeScreen = ({ navigation }) => {
               <Text style={styles.price}>${item.price}</Text>
               <Text style={styles.detail}>{item.item_detail}</Text>
               <TouchableOpacity style={styles.addButton} onPress={() => handleAddToCart(item.id, 1)}>
-                <Text style={styles.addButtonText}>Add to Cart</Text>
+                <Text style={styles.addButtonText}>เพิ่มสินค้า</Text>
               </TouchableOpacity>
             </View>
           )}
         />
       )}
 
-      <CustomButton title="ตะกร้า" backgroundColor="#3F7D58" onPress={() => navigation.navigate("Cart")} />
+         <TouchableOpacity 
+             style={styles.checkoutButton} 
+             onPress={() => navigation.navigate('Cart')}
+             >
+            <Text style={styles.checkoutText}>ตะกร้า</Text>
+         </TouchableOpacity>
     </View>
   );
 };
@@ -145,7 +150,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    paddingTop:30,
+    paddingTop:40,
     backgroundColor: "white",
   },
   header: {
@@ -156,7 +161,7 @@ const styles = StyleSheet.create({
   },
   adminButton: {
     position: "absolute",
-    top: 40,
+    top: 45,
     right: 20,
     width: 50,
     height: 50,
@@ -239,6 +244,20 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  checkoutButton: {
+    width: '100%',
+    backgroundColor: "#FF9D23",
+    padding: 10,
+    borderRadius: 15,
+    alignItems: 'center',
+    // marginTop: ,
+    elevation: 4, // เงาเพิ่มมิติให้ปุ่ม
+  },
+  checkoutText: {
+    color: "#FFF",
     fontSize: 16,
     fontWeight: "bold",
   },

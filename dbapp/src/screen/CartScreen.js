@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Button, TouchableOpacity, Alert, Image } from 'react-native';
-import { fetchCartItems, removeFromCart, increaseQuantity, decreaseQuantity } from '../services/api';  // เพิ่มฟังก์ชัน increase, decrease
+import { fetchCartItems, removeFromCart, increaseQuantity, decreaseQuantity } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CartScreen = ({ navigation }) => {
-  const [cartItems, setCartItems] = useState([]);  // สถานะสำหรับเก็บข้อมูลสินค้าที่อยู่ในตะกร้า
-  const [loading, setLoading] = useState(true);  // สถานะการโหลดข้อมูล
-  const [userId, setUserId] = useState(null);  // สถานะเก็บ userId
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
 
-
-
-  
-  // ดึง userId จาก AsyncStorage
   const getUserId = async () => {
     try {
       const storedUserId = await AsyncStorage.getItem("userId");
       if (storedUserId) {
-        setUserId(storedUserId);  // เก็บ userId ที่ดึงมา
+        setUserId(storedUserId);
       } else {
-        // ถ้าไม่พบ userId จะกลับไปที่หน้า Login
         navigation.navigate("Login");
       }
     } catch (error) {
@@ -26,15 +21,12 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
-  // ฟังก์ชันสำหรับลบสินค้าออกจากตะกร้า
   const handleRemoveFromCart = async (productId) => {
     try {
       if (userId) {
-        // เรียก API เพื่อลบสินค้าออกจากตะกร้า
-        await removeFromCart(userId, productId); 
-        Alert.alert("Product removed from cart");  // แจ้งผู้ใช้ว่าสินค้าได้ถูกลบ
-        // ดึงข้อมูลตะกร้าใหม่หลังจากลบสินค้า
-        getCartItems(); 
+        await removeFromCart(userId, productId);
+        Alert.alert("Product removed from cart");
+        getCartItems();
       } else {
         Alert.alert("User not logged in");
       }
@@ -44,7 +36,6 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
-  // ฟังก์ชันสำหรับเพิ่มจำนวนสินค้า
   const handleIncreaseQuantity = async (productId) => {
     try {
       if (userId) {
@@ -61,7 +52,6 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
-  // ฟังก์ชันสำหรับลดจำนวนสินค้า
   const handleDecreaseQuantity = async (productId) => {
     try {
       if (userId) {
@@ -78,14 +68,13 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
-  // ดึงข้อมูลตะกร้าของผู้ใช้
   const getCartItems = async () => {
-    if (!userId) return;  // หากไม่มี userId, ไม่ต้องดึงข้อมูลตะกร้า
+    if (!userId) return;
 
     try {
-      const response = await fetchCartItems(userId); 
-      setCartItems(response.cart);  // เก็บข้อมูลสินค้าที่อยู่ในตะกร้า
-      setLoading(false);  // อัพเดตสถานะว่าเสร็จสิ้นการโหลดข้อมูล
+      const response = await fetchCartItems(userId);
+      setCartItems(response.cart);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching cart items:", error);
       Alert.alert("Error", "ไม่สามารถดึงข้อมูลตะกร้าได้");
@@ -93,58 +82,70 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
+  // ฟังก์ชันคำนวณราคารวมทั้งหมด
+  const getTotalPrice = () => {
+    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
+
   useEffect(() => {
-    getUserId();  // ดึง userId เมื่อหน้าโหลด
+    getUserId();
   }, []);
 
   useEffect(() => {
     if (userId) {
-      getCartItems();  // ดึงข้อมูลตะกร้าเมื่อมี userId
+      getCartItems();
     }
   }, [userId]);
 
   return (
     <View style={styles.container}>
       {loading ? (
-        <Text>กำลังโหลดข้อมูล...</Text>  // แสดงข้อความขณะโหลดข้อมูล
+        <Text>กำลังโหลดข้อมูล...</Text>
       ) : (
-        <FlatList
-          data={cartItems}
-          keyExtractor={(item) => item.product_id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Image source={{ uri: item.image_url }} style={styles.image} />
-              {/* ใช้ imageUrl ที่ดึงจากฐานข้อมูล */}
-              <Text>{item.item_name}</Text>
-              <Text>Price: ${item.price}</Text>
-
-              <View style={styles.quantityContainer}>
-                <TouchableOpacity onPress={() => handleDecreaseQuantity(item.product_id)}>
-                  <Text style={styles.quantityButton}>-</Text>
-                </TouchableOpacity>
-                <Text>{item.quantity}</Text>
-                <TouchableOpacity onPress={() => handleIncreaseQuantity(item.product_id)}>
-                  <Text style={styles.quantityButton}>+</Text>
-                </TouchableOpacity>
+        <>
+        <Text style={styles.cart}>ตะกร้าสินค้า</Text>
+          <FlatList
+            data={cartItems}
+            keyExtractor={(item) => item.product_id.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.item}>
+                <Image source={{ uri: item.image_url }} style={styles.image} />
+                <View style={styles.details}>
+                  <Text style={styles.itemName}>{item.item_name}</Text>
+                  <Text style={styles.price}>฿{item.price}</Text>
+                  <View style={styles.quantityContainer}>
+                    <TouchableOpacity onPress={() => handleDecreaseQuantity(item.product_id)}>
+                      <Text style={styles.quantityButton}>-</Text>
+                    </TouchableOpacity>
+                    <Text>{item.quantity}</Text>
+                    <TouchableOpacity onPress={() => handleIncreaseQuantity(item.product_id)}>
+                      <Text style={styles.quantityButton}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => handleRemoveFromCart(item.product_id)}
+                  >
+                    <Text style={styles.removeButtonText}>ลบสินค้า</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => handleRemoveFromCart(item.product_id)}
+            )}
+          />
+          
+          {/* แสดงราคารวมทั้งหมด */}
+          <View style={styles.summary}>
+              <Text style={styles.totalPrice}>ราคารวม: ฿{getTotalPrice()}</Text>
+              <TouchableOpacity 
+                style={styles.checkoutButton} 
+                onPress={() => navigation.navigate('Checkout')}
               >
-                <Text style={styles.removeButtonText}>Remove from Cart</Text>
+                <Text style={styles.checkoutText}>ชำระเงิน</Text>
               </TouchableOpacity>
-            </View>
-          )}
-        />
-      )}
+          </View>
 
-      <View style={styles.summary}>
-        <Button
-          title="Proceed to Checkout"
-          onPress={() => navigation.navigate('Checkout')}  // ไปยังหน้าชำระเงิน
-        />
-      </View>
+        </>
+      )}
     </View>
   );
 };
@@ -152,21 +153,35 @@ const CartScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     padding: 20,
     backgroundColor: "#FFF7F3",
+    paddingTop: 35
   },
   item: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 15,
     padding: 10,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 5,
+    backgroundColor: "rgba(71, 71, 71, 0.06)",
+    borderRadius: 10,
+    borderColor: "black",
   },
   image: {
     width: 100,
     height: 100,
-    marginTop: 10,
     resizeMode: 'contain',
+  },
+  details: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  itemName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  price: {
+    fontSize: 14,
+    color: "#FF5733",
   },
   quantityContainer: {
     flexDirection: 'row',
@@ -180,8 +195,8 @@ const styles = StyleSheet.create({
   },
   removeButton: {
     backgroundColor: "#FF5733",
-    padding: 10,
-    borderRadius: 5,
+    padding: 8,
+    borderRadius: 8,
     marginTop: 10,
     alignItems: 'center',
   },
@@ -194,7 +209,34 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#ddd",
     paddingTop: 10,
+    alignItems: 'center',
   },
+  totalPrice: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  checkoutButton: {
+    width: '100%',
+    backgroundColor: "#FF9D23",
+    padding: 10,
+    borderRadius: 15,
+    alignItems: 'center',
+    // marginTop: ,
+    elevation: 4, // เงาเพิ่มมิติให้ปุ่ม
+  },
+  checkoutText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  cart: {
+    fontSize: 26,
+    fontWeight: "bold",
+    textAlign: "center",
+    margin: 15,
+  },
+  
 });
 
 export default CartScreen;
