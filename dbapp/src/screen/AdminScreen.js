@@ -73,7 +73,7 @@ const AdminScreen = () => {
           onChangeText={setPrice}
         />
         <SearchBox
-          placeholder={"ลิงก็รูปภาพ"}
+          placeholder={"ลิงก์รูปภาพ"}
           value={image_url}
           onChangeText={setImage_url}
         />
