@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Button, TouchableOpacity, Alert, Image } from 'react-native';
-import { fetchCartItems, removeFromCart } from '../services/api';  // import ฟังก์ชันจาก api.js
+import { fetchCartItems, removeFromCart, increaseQuantity, decreaseQuantity } from '../services/api';  // เพิ่มฟังก์ชัน increase, decrease
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CartScreen = ({ navigation }) => {
@@ -8,6 +8,9 @@ const CartScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);  // สถานะการโหลดข้อมูล
   const [userId, setUserId] = useState(null);  // สถานะเก็บ userId
 
+
+
+  
   // ดึง userId จาก AsyncStorage
   const getUserId = async () => {
     try {
@@ -23,30 +26,63 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
-// ฟังก์ชันสำหรับลบสินค้าออกจากตะกร้า
-const handleRemoveFromCart = async (productId) => {
-  try {
-    if (userId) {
-      // เรียก API เพื่อลบสินค้าออกจากตะกร้า
-      await removeFromCart(userId, productId); 
-      Alert.alert("Product removed from cart");  // แจ้งผู้ใช้ว่าสินค้าได้ถูกลบ
-      // ดึงข้อมูลตะกร้าใหม่หลังจากลบสินค้า
-      getCartItems(); 
-    } else {
-      Alert.alert("User not logged in");
+  // ฟังก์ชันสำหรับลบสินค้าออกจากตะกร้า
+  const handleRemoveFromCart = async (productId) => {
+    try {
+      if (userId) {
+        // เรียก API เพื่อลบสินค้าออกจากตะกร้า
+        await removeFromCart(userId, productId); 
+        Alert.alert("Product removed from cart");  // แจ้งผู้ใช้ว่าสินค้าได้ถูกลบ
+        // ดึงข้อมูลตะกร้าใหม่หลังจากลบสินค้า
+        getCartItems(); 
+      } else {
+        Alert.alert("User not logged in");
+      }
+    } catch (error) {
+      console.error("Error removing product from cart:", error);
+      Alert.alert("Failed to remove product from cart");
     }
-  } catch (error) {
-    console.error("Error removing product from cart:", error);
-    Alert.alert("Failed to remove product from cart");
-  }
-};
+  };
+
+  // ฟังก์ชันสำหรับเพิ่มจำนวนสินค้า
+  const handleIncreaseQuantity = async (productId) => {
+    try {
+      if (userId) {
+        const response = await increaseQuantity(userId, productId);
+        setCartItems((prevItems) => 
+          prevItems.map(item => 
+            item.product_id === productId ? { ...item, quantity: response.quantity } : item
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error increasing quantity:', error.message);
+      Alert.alert("Failed to increase quantity");
+    }
+  };
+
+  // ฟังก์ชันสำหรับลดจำนวนสินค้า
+  const handleDecreaseQuantity = async (productId) => {
+    try {
+      if (userId) {
+        const response = await decreaseQuantity(userId, productId);
+        setCartItems((prevItems) => 
+          prevItems.map(item => 
+            item.product_id === productId ? { ...item, quantity: response.quantity } : item
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error decreasing quantity:', error.message);
+      Alert.alert("Failed to decrease quantity");
+    }
+  };
 
   // ดึงข้อมูลตะกร้าของผู้ใช้
   const getCartItems = async () => {
     if (!userId) return;  // หากไม่มี userId, ไม่ต้องดึงข้อมูลตะกร้า
 
     try {
-      // สมมุติว่า fetchCartItems เป็นฟังก์ชันที่ดึงข้อมูลตะกร้าของผู้ใช้จาก API
       const response = await fetchCartItems(userId); 
       setCartItems(response.cart);  // เก็บข้อมูลสินค้าที่อยู่ในตะกร้า
       setLoading(false);  // อัพเดตสถานะว่าเสร็จสิ้นการโหลดข้อมูล
@@ -56,9 +92,6 @@ const handleRemoveFromCart = async (productId) => {
       setLoading(false);
     }
   };
-
-  // ฟังก์ชันสำหรับลบสินค้าออกจากตะกร้า
-  
 
   useEffect(() => {
     getUserId();  // ดึง userId เมื่อหน้าโหลด
@@ -77,18 +110,27 @@ const handleRemoveFromCart = async (productId) => {
       ) : (
         <FlatList
           data={cartItems}
-          keyExtractor={(item) => (item.product_id ? item.product_id.toString() : `${item.item_name || 'No Name Available'}`)}  // ใช้ product_id เป็น key ของแต่ละรายการ
+          keyExtractor={(item) => item.product_id.toString()}
           renderItem={({ item }) => (
             <View style={styles.item}>
               <Image source={{ uri: item.image_url }} style={styles.image} />
-              <Text>{item.item_name ? item.item_name : 'No Name Available'}</Text>
-              <Text>Price: ${item.price ? item.price : 0}</Text>
-              <Text>Quantity: {item.quantity ? item.quantity : 1}</Text>
+              {/* ใช้ imageUrl ที่ดึงจากฐานข้อมูล */}
+              <Text>{item.item_name}</Text>
+              <Text>Price: ${item.price}</Text>
 
-              {/* ปุ่ม Remove from Cart */}
-              <TouchableOpacity 
-                style={styles.removeButton} 
-                onPress={() => handleRemoveFromCart(item.product_id)} // เมื่อกดปุ่ม จะเรียก handleRemoveFromCart โดยส่ง product_id
+              <View style={styles.quantityContainer}>
+                <TouchableOpacity onPress={() => handleDecreaseQuantity(item.product_id)}>
+                  <Text style={styles.quantityButton}>-</Text>
+                </TouchableOpacity>
+                <Text>{item.quantity}</Text>
+                <TouchableOpacity onPress={() => handleIncreaseQuantity(item.product_id)}>
+                  <Text style={styles.quantityButton}>+</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => handleRemoveFromCart(item.product_id)}
               >
                 <Text style={styles.removeButtonText}>Remove from Cart</Text>
               </TouchableOpacity>
@@ -124,7 +166,17 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     marginTop: 10,
-    resizeMode: 'contain', // เพื่อให้รูปแสดงตามขนาดที่กำหนด
+    resizeMode: 'contain',
+  },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  quantityButton: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    paddingHorizontal: 10,
   },
   removeButton: {
     backgroundColor: "#FF5733",

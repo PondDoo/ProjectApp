@@ -177,11 +177,14 @@ app.post('/add-to-cart', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });  // ไม่พบผู้ใช้
     }
 
-    // ตรวจสอบสินค้าที่ต้องการเพิ่ม
+    // ตรวจสอบสินค้าที่ต้องการเพิ่ม และดึง image_url ของสินค้า
     const productCheck = await pool.query('SELECT * FROM shopitems WHERE id = $1', [productIdInt]);
     if (productCheck.rows.length === 0) {
       return res.status(404).json({ message: 'Product not found' });  // ไม่พบสินค้า
     }
+
+    // ดึง image_url ของสินค้า
+    const imageUrl = productCheck.rows[0].image_url;
 
     // ตรวจสอบว่าในตะกร้ามีสินค้าตัวนี้อยู่แล้วหรือไม่
     const cartCheck = await pool.query(
@@ -217,27 +220,26 @@ app.post('/add-to-cart', async (req, res) => {
     } else {
       // ถ้ายังไม่มีสินค้าในตะกร้า ให้เพิ่มใหม่
       await pool.query(
-        `INSERT INTO cart_items (cart_id, product_id, quantity) VALUES ($1, $2, $3)`,
-        [cartId, productIdInt, quantityInt]
+        `INSERT INTO cart_items (cart_id, product_id, quantity, image_url) VALUES ($1, $2, $3, $4)`,
+        [cartId, productIdInt, quantityInt, imageUrl]
       );
     }
 
-    res.status(200).json({ message: 'Product added to cart', cartId, productId: productIdInt, quantity: quantityInt });
+    res.status(200).json({ message: 'Product added to cart', cartId, productId: productIdInt, quantity: quantityInt, imageUrl });
   } catch (error) {
     console.error('Error adding to cart:', error);  // เพิ่มการแสดงข้อผิดพลาดเพิ่มเติม
     res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-// ดูตะกร้าของผู้ใช้
+
+// ดูตะกร้าของผู้ใช้และรวมข้อมูลสินค้า เช่น item_name, price, image_url
 app.get('/cart/:userId', async (req, res) => {
   const userId = parseInt(req.params.userId);  // แปลง userId เป็นตัวเลข
 
   if (isNaN(userId)) {
     return res.status(400).json({ message: 'Invalid userId' });
   }
-
-  console.log("Received userId:", userId); // เพิ่ม log เพื่อตรวจสอบค่า userId
 
   try {
     const cartCheck = await pool.query(
@@ -250,17 +252,24 @@ app.get('/cart/:userId', async (req, res) => {
     }
 
     const cartId = cartCheck.rows[0].cart_id;
+
+    // ดึงข้อมูลสินค้าในตะกร้า พร้อมข้อมูลจากตาราง shopitems เช่น item_name, price, image_url
     const cartItems = await pool.query(
-      'SELECT ci.product_id, ci.quantity, si.item_name, si.price FROM cart_items ci JOIN shopitems si ON ci.product_id = si.id WHERE ci.cart_id = $1',
+      `SELECT ci.product_id, ci.quantity, si.item_name, si.price, si.image_url
+      FROM cart_items ci
+      JOIN shopitems si ON ci.product_id = si.id
+      WHERE ci.cart_id = $1`,
       [cartId]
     );
 
+    // ส่งข้อมูลตะกร้าผู้ใช้ที่มีสินค้าพร้อมรายละเอียด
     res.status(200).json({ cart: cartItems.rows });
   } catch (error) {
     console.error('Error fetching cart:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 app.get("/cart/:userId", async (req, res) => {
   const { userId } = req.params;
@@ -377,5 +386,80 @@ app.delete('/cart/:userId/item/:productId', async (req, res) => {
   } catch (error) {
     console.error('Error removing product from cart:', error);
     return res.status(500).json({ message: 'Server error, please try again later' });
+  }
+});
+
+
+// เพิ่มจำนวนสินค้าภายในตะกร้า
+app.put('/cart/:userId/item/:productId/increase', async (req, res) => {
+  const { userId, productId } = req.params;
+
+  try {
+    // ค้นหาว่าสินค้าที่ระบุอยู่ในตะกร้าของผู้ใช้หรือไม่
+    const cartItem = await pool.query(
+      'SELECT * FROM cart_items WHERE cart_id IN (SELECT cart_id FROM cart WHERE user_id = $1 AND status = $2) AND product_id = $3',
+      [userId, 'pending', productId]
+    );
+
+    if (cartItem.rows.length === 0) {
+      return res.status(404).json({ message: 'Product not found in cart' });
+    }
+
+    // เพิ่มจำนวนสินค้า
+    const updatedCartItem = await pool.query(
+      'UPDATE cart_items SET quantity = quantity + 1 WHERE cart_id = $1 AND product_id = $2 RETURNING *',
+      [cartItem.rows[0].cart_id, productId]
+    );
+
+    res.status(200).json({
+      message: 'Product quantity increased',
+      quantity: updatedCartItem.rows[0].quantity,
+    });
+  } catch (error) {
+    console.error('Error increasing product quantity:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// ลดจำนวนสินค้าภายในตะกร้า
+app.put('/cart/:userId/item/:productId/decrease', async (req, res) => {
+  const { userId, productId } = req.params;
+
+  try {
+    // ค้นหาว่าสินค้าที่ระบุอยู่ในตะกร้าของผู้ใช้หรือไม่
+    const cartItem = await pool.query(
+      'SELECT * FROM cart_items WHERE cart_id IN (SELECT cart_id FROM cart WHERE user_id = $1 AND status = $2) AND product_id = $3',
+      [userId, 'pending', productId]
+    );
+
+    if (cartItem.rows.length === 0) {
+      return res.status(404).json({ message: 'Product not found in cart' });
+    }
+
+    // ถ้าจำนวนสินค้ามากกว่า 1 ให้ลดจำนวนลง
+    if (cartItem.rows[0].quantity > 1) {
+      const updatedCartItem = await pool.query(
+        'UPDATE cart_items SET quantity = quantity - 1 WHERE cart_id = $1 AND product_id = $2 RETURNING *',
+        [cartItem.rows[0].cart_id, productId]
+      );
+
+      return res.status(200).json({
+        message: 'Product quantity decreased',
+        quantity: updatedCartItem.rows[0].quantity,
+      });
+    }
+
+    // ถ้าจำนวนสินค้าคือ 1 และต้องการลดลง จะลบสินค้าออกจากตะกร้า
+    await pool.query(
+      'DELETE FROM cart_items WHERE cart_id = $1 AND product_id = $2',
+      [cartItem.rows[0].cart_id, productId]
+    );
+
+    res.status(200).json({
+      message: 'Product removed from cart',
+    });
+  } catch (error) {
+    console.error('Error decreasing product quantity:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });

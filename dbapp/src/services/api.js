@@ -41,6 +41,7 @@ export const loginUser = async (username, password) => {
 export const fetchShopItems = async () => {
   try {
     const response = await axios.get(`${API_URL}/shopitems`);
+    console.log("Cart Items: ", response.cart);
     return response.data;  // ส่งข้อมูลสินค้ากลับ
   } catch (error) {
     console.error('Error fetching shopitems:', error.response ? error.response.data : error.message);
@@ -48,13 +49,14 @@ export const fetchShopItems = async () => {
   }
 };
 
-export const addToCart = async (userId, productId, quantity) => {
+export const addToCart = async (userId, productId, quantity, image_url) => {
   try {
-    console.log('Sending add to cart request:', { userId, productId, quantity });  // พิมพ์ข้อมูลที่ส่งไป
+    console.log('Sending add to cart request:', { userId, productId, quantity, image_url });  // พิมพ์ข้อมูลที่ส่งไป
     const response = await axios.post(`${API_URL}/add-to-cart`, {
       userId,
       productId,
-      quantity
+      quantity,
+      image_url  // เพิ่ม imageUrl ที่ได้จากฐานข้อมูล
     });
     return response.data;
   } catch (error) {
@@ -62,6 +64,7 @@ export const addToCart = async (userId, productId, quantity) => {
     throw new Error(error.response?.data?.message || "Error adding to cart");
   }
 };
+
 
 export const fetchCartItems = async (userId) => {
   try {
@@ -121,5 +124,27 @@ export const removeFromCart = async (userId, productId) => {
   } catch (error) {
     console.error("Error removing from cart:", error);
     throw error;  // ถ้ามีข้อผิดพลาดในการลบ ให้โยนข้อผิดพลาดไปที่ผู้ใช้
+  }
+};
+
+// ฟังก์ชันสำหรับการเพิ่มจำนวนสินค้า
+export const increaseQuantity = async (userId, productId) => {
+  try {
+    const response = await axios.put(`${API_URL}/cart/${userId}/item/${productId}/increase`);
+    return response.data;  // ส่งข้อมูลที่ได้รับกลับ
+  } catch (error) {
+    console.error('Error increasing quantity:', error.response ? error.response.data : error.message);
+    throw new Error(error.response?.data?.message || "Error increasing quantity");
+  }
+};
+
+// ฟังก์ชันสำหรับการลดจำนวนสินค้า
+export const decreaseQuantity = async (userId, productId) => {
+  try {
+    const response = await axios.put(`${API_URL}/cart/${userId}/item/${productId}/decrease`);
+    return response.data;  // ส่งข้อมูลที่ได้รับกลับ
+  } catch (error) {
+    console.error('Error decreasing quantity:', error.response ? error.response.data : error.message);
+    throw new Error(error.response?.data?.message || "Error decreasing quantity");
   }
 };
