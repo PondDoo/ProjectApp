@@ -4,6 +4,8 @@ import { Calendar } from "react-native-calendars";
 import RNPickerSelect from "react-native-picker-select";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
+import icon from "@expo/vector-icons/Ionicons"
+import CustomButton from "../component/custombutton";
 
 const QueueScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -45,10 +47,15 @@ const QueueScreen = () => {
       Alert.alert("ไม่พบการจอง", `ไม่มีการจองเวลา ${time} ในวันที่ ${date}`);
       return;
     }
-
+  
     const updatedBookings = { ...bookedSlots };
-    delete updatedBookings[date][time];
-
+    delete updatedBookings[date][time]; // ลบเวลานั้นออก
+  
+    // ถ้าหลังจากลบแล้ว วันนั้นไม่มีการจองเหลืออยู่ ให้ลบวันออกไปเลย
+    if (Object.keys(updatedBookings[date]).length === 0) {
+      delete updatedBookings[date];
+    }
+  
     setBookedSlots(updatedBookings);
     await storeBookings(updatedBookings);
     Alert.alert("ยกเลิกการจอง", `การจองเวลา ${time} ในวันที่ ${date} ถูกยกเลิกแล้ว!`);
@@ -128,11 +135,9 @@ const QueueScreen = () => {
               {Object.entries(item[1]).map(([time, value]) => (
                 <View key={time} style={styles.bookingTextContainer}>
                   <Text style={styles.bookingText}>🕒 {time}</Text>
-                  <Button
-                    title="ยกเลิก"
-                    onPress={() => cancelBooking(item[0], time)}
-                    color="red"
-                  />
+                  <TouchableOpacity style={styles.cancelButton} onPress={() => cancelBooking(item[0], time)}>
+                    <Text style={styles.cancelButtonText}>ยกเลิก</Text>
+                  </TouchableOpacity>
                 </View>
               ))}
             </View>
@@ -143,7 +148,9 @@ const QueueScreen = () => {
       )}
 
       <View style={styles.buttonContainer}>
-        <Button title="ล้างการจองทั้งหมด" onPress={clearBookings} color="red" />
+          <TouchableOpacity style={styles.clearButton} onPress={clearBookings}>
+            <Text style={styles.clearButtonText}>ล้างข้อมูล</Text>
+          </TouchableOpacity>
       </View>
     </View>
   );
@@ -156,9 +163,10 @@ const styles = StyleSheet.create({
     backgroundColor:"white"
   },
   title: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "bold",
     marginBottom: 10,
+    marginTop:20,
   },
   modalOverlay: {
     flex: 1,
@@ -174,6 +182,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     position: "relative",
   },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  
+  clearButton: {
+    backgroundColor: "#F7374F",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "90%", // ทำให้ปุ่มกว้างขึ้น
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3, // สำหรับ Android
+  },
+  clearButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  
   closeButton: {
     position: "absolute",
     top: 10,
@@ -190,16 +227,34 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   bookingText: {
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight:"600",
   },
   noBooking: {
     fontSize: 14,
     fontStyle: "italic",
     color: "gray",
   },
-  buttonContainer: {
-    marginTop: 20,
+  cancelButton: {
+    backgroundColor: "#FF6B6B",
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
+  
+  cancelButtonText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  
 });
 
 export default QueueScreen;
