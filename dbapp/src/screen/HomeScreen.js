@@ -11,6 +11,7 @@ const HomeScreen = ({ navigation }) => {
   const [shopItems, setShopItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
+  const [showPasswordInput, setShowPasswordInput] = useState(false); // State สำหรับแสดง input รหัส
 
   const numColumns = 2; // กำหนดให้เป็นค่าคงที่
 
@@ -75,15 +76,36 @@ const HomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.header}>Motorix Shop</Text>
 
-      <TextInput
-        placeholder="Password Admin"
-        secureTextEntry={true}
-        value={Password}
-        onChangeText={setPassword}
-        style={styles.input}
-      />
+      {/* ปุ่ม Admin Login อยู่มุมขวาบน */}
+      <TouchableOpacity
+        style={styles.adminButton}
+        onPress={() => setShowPasswordInput(true)} // เมื่อกดจะแสดงฟอร์มกรอกรหัส
+      >
+        <Feather name="lock" size={24} color="white" />
+      </TouchableOpacity>
 
-      <CustomButton title="Admin Login" backgroundColor="#FF9D23" onPress={CheckPassword} />
+      {/* ถ้า showPasswordInput เป็น true จะแสดงฟอร์มกรอกรหัส */}
+      {showPasswordInput && (
+        <View style={styles.passwordContainer}>
+          {/* ไอคอนกากบาทสำหรับปิดฟอร์ม */}
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setShowPasswordInput(false)} // เมื่อกดจะปิดฟอร์ม
+          >
+            <Feather name="x" size={24} color="black" />
+          </TouchableOpacity>
+
+          <TextInput
+            placeholder="Password Admin"
+            secureTextEntry={true}
+            value={Password}
+            onChangeText={setPassword}
+            style={styles.input}
+          />
+          <CustomButton title="Log in" backgroundColor="#FF9D23" onPress={CheckPassword} />
+        </View>
+      )}
+
       <CustomButton
         title="จองคิว"
         backgroundColor="#d84315"
@@ -123,6 +145,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingTop:30,
     backgroundColor: "white",
   },
   header: {
@@ -130,7 +153,38 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     margin: 15,
-    // color: "#e64a19",
+  },
+  adminButton: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+    width: 50,
+    height: 50,
+    backgroundColor: "#FF9D23",
+    borderRadius: 25, // ทำให้ปุ่มกลม
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2, // เพิ่ม zIndex เพื่อให้ปุ่มอยู่เหนือฟอร์ม
+  },
+  passwordContainer: {
+    marginTop: 10,
+    padding: 25,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
+    position: "relative", // ทำให้ตำแหน่งของปุ่มกากบาทไม่ซ้อนกัน
+  },
+  closeButton: {
+    position: "absolute",
+    top: 0,
+    right: 1,
+    backgroundColor: "transparent",
+    padding: 3,
+    zIndex: 3, // ทำให้ไอคอนกากบาทอยู่เหนือ input
   },
   input: {
     borderWidth: 1,
@@ -190,4 +244,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen; 
+export default HomeScreen;
