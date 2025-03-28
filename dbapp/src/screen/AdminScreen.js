@@ -83,7 +83,7 @@ const AdminScreen = () => {
           onChangeText={setItem_detail}
         />
         <CustomButton
-          title={"Register"}
+          title={"เพิ่มสินค้า"}
           backgroundColor={"#C14600"}
           onPress={addtomarket}
         />
