@@ -45,38 +45,54 @@ const CartScreen = ({ navigation }) => {
   };
 
   // ฟังก์ชันสำหรับเพิ่มจำนวนสินค้า
-  const handleIncreaseQuantity = async (productId) => {
-    try {
-      if (userId) {
+const handleIncreaseQuantity = async (productId) => {
+  try {
+    if (userId) {
+      // เช็คว่า quantity ปัจจุบันมีอยู่ใน cartItems หรือไม่
+      const currentProduct = cartItems.find(item => item.product_id === productId);
+      if (currentProduct) {
         const response = await increaseQuantity(userId, productId);
-        setCartItems((prevItems) => 
-          prevItems.map(item => 
-            item.product_id === productId ? { ...item, quantity: response.quantity } : item
+        setCartItems((prevItems) =>
+          prevItems.map(item =>
+            item.product_id === productId
+              ? { ...item, quantity: response.quantity }
+              : item
           )
         );
       }
-    } catch (error) {
-      console.error('Error increasing quantity:', error.message);
-      Alert.alert("Failed to increase quantity");
     }
-  };
+  } catch (error) {
+    
+    console.error('Error increasing quantity:', error.message);
+    //Alert.alert("Failed to increase quantity");
+  }
+};
 
-  // ฟังก์ชันสำหรับลดจำนวนสินค้า
-  const handleDecreaseQuantity = async (productId) => {
-    try {
-      if (userId) {
+// ฟังก์ชันสำหรับลดจำนวนสินค้า
+const handleDecreaseQuantity = async (productId) => {
+  try {
+    if (userId) {
+      // เช็คว่า quantity ปัจจุบันมากกว่า 1 หรือไม่
+      const currentProduct = cartItems.find(item => item.product_id === productId);
+      if (currentProduct && currentProduct.quantity > 1) {
         const response = await decreaseQuantity(userId, productId);
-        setCartItems((prevItems) => 
-          prevItems.map(item => 
-            item.product_id === productId ? { ...item, quantity: response.quantity } : item
+        setCartItems((prevItems) =>
+          prevItems.map(item =>
+            item.product_id === productId
+              ? { ...item, quantity: response.quantity }
+              : item
           )
         );
+      } else {
+        //Alert.alert("Quantity cannot be less than 1");
       }
-    } catch (error) {
-      console.error('Error decreasing quantity:', error.message);
-      Alert.alert("Failed to decrease quantity");
     }
-  };
+  } catch (error) {
+    console.error('Error decreasing quantity:', error.message);
+    Alert.alert("Failed to decrease quantity");
+  }
+};
+
 
   // ดึงข้อมูลตะกร้าของผู้ใช้
   const getCartItems = async () => {
