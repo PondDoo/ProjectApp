@@ -2,10 +2,10 @@ import React from "react";
 import {View,TextInput,StyleSheet} from 'react-native'
 import Feather from "@expo/vector-icons/Feather"
 
-const SearchBox =({placeholder,value,onChangeText,secure}) => {
+const SearchBox =({placeholder,value,onChangeText,secure,icons}) => {
     return (
         <View style = {styles.container}>
-            <Feather name = "search" size = {26} color="#888" style={styles.icon} />
+            <Feather name = {icons} size = {26} color="#888" style={styles.icon} />
             <TextInput
             style = {styles.input}
             placeholder={placeholder}
@@ -19,7 +19,7 @@ const SearchBox =({placeholder,value,onChangeText,secure}) => {
 
 const styles = StyleSheet.create ({
     container: {
-        margin: 5,
+        marginTop: 20,
         flexDirection: "row",
         alignItems: "center",
         borderRadius: 10,

@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor:"white"
   },
   title: {
     fontSize: 18,
@@ -179,7 +180,6 @@ const styles = StyleSheet.create({
     right: 10,
   },
   bookingItem: {
-    backgroundColor: "#f0f0f0",
     padding: 10,
     borderRadius: 10,
     marginVertical: 5,
