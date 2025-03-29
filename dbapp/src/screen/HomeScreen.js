@@ -5,6 +5,7 @@ import CustomButton from "../component/custombutton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import Feather from "@expo/vector-icons/Feather";
+import Toast from "react-native-toast-message";
 
 const HomeScreen = ({ navigation }) => {
   const [Password, setPassword] = useState("");
@@ -62,7 +63,16 @@ const HomeScreen = ({ navigation }) => {
     try {
       if (userId) {
         await addToCart(userId, productId, quantity);
-        //Alert.alert("Product added to cart");
+        // แสดงการแจ้งเตือน
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'สินค้าถูกเพิ่มในตะกร้าแล้ว!',
+          text2: 'คุณสามารถไปที่ตะกร้าเพื่อทำการชำระเงิน',
+          visibilityTime: 3000, // แสดงข้อความเป็นเวลา 3 วินาที
+          autoHide: true, // ซ่อนอัตโนมัติ
+          bottomOffset: 50, // ระยะห่างจากขอบล่าง
+        });
       } else {
         Alert.alert("User not logged in");
       }
@@ -71,6 +81,10 @@ const HomeScreen = ({ navigation }) => {
       Alert.alert("Failed to add product to cart");
     }
   };
+  
+  
+  
+  
 
   // ฟังก์ชันสำหรับออกจากระบบ
   const handleLogout = async () => {
@@ -164,7 +178,9 @@ const HomeScreen = ({ navigation }) => {
       >
         <Text style={styles.checkoutText}>ตะกร้า</Text>
       </TouchableOpacity>
+      <Toast />
     </View>
+    
   );
 };
 
