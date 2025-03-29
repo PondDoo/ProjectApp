@@ -44,7 +44,7 @@ const AdminScreen = () => {
     <View style={styles.orderItem}>
       <Text style={styles.orderTitle}>Order ID: {item.id}</Text>
       <Text>User ID: {item.user_id}</Text>
-      <Text>Total Price: ${item.total_amount}</Text>
+      <Text>Total Price: ${item.total_price}</Text>
       <Text>Shipping Address: {item.shipping_address}</Text>
       <Text>Status: {item.status}</Text>
       {/* <Text>Date: {new Date(item.created_at).toLocaleString()}</Text> */}
