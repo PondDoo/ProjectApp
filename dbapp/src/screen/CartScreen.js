@@ -138,7 +138,7 @@ const CartScreen = ({ navigation }) => {
               <Text style={styles.totalPrice}>ราคารวม: ฿{getTotalPrice()}</Text>
               <TouchableOpacity 
                 style={styles.checkoutButton} 
-                onPress={() => navigation.navigate('Checkout')}
+                onPress={() => navigation.navigate('Payment')}
               >
                 <Text style={styles.checkoutText}>ชำระเงิน</Text>
               </TouchableOpacity>
@@ -147,12 +147,6 @@ const CartScreen = ({ navigation }) => {
         </>
       )}
 
-      <View style={styles.summary}>
-        <Button
-          title="Proceed to Checkout"
-          onPress={() => navigation.navigate('Payment')}  // ไปยังหน้าชำระเงิน
-        />
-      </View>
     </View>
   );
 };
