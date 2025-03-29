@@ -155,7 +155,7 @@ const HomeScreen = ({ navigation }) => {
 
       {/* ปุ่มออกจากระบบ */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>ออกจากระบบ</Text>
+        <Feather name="log-out" size={24} color="white" />
       </TouchableOpacity>
 
       <TouchableOpacity 
@@ -283,16 +283,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   logoutButton: {
-    marginTop: 20,
+    position: "absolute", // ทำให้ปุ่มลอยอยู่
+    top: 45,
+    left: 20,
+    width: 50,
+    height: 50,
     backgroundColor: "#d84315",
-    padding: 12,
-    borderRadius: 10,
+    borderRadius: 25, // ทำให้ปุ่มกลม
+    justifyContent: "center",
     alignItems: "center",
+    zIndex: 2, // เพิ่ม zIndex เพื่อให้ปุ่มอยู่เหนือฟอร์ม
   },
   logoutText: {
-    color: "#fff",
+    color: "white",
     fontSize: 16,
-    fontWeight: "bold",
   },
 });
 
