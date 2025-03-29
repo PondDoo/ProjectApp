@@ -72,6 +72,23 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  // ฟังก์ชันสำหรับออกจากระบบ
+  const handleLogout = async () => {
+    try {
+      // ลบ userId ออกจาก AsyncStorage
+      await AsyncStorage.removeItem("userId");
+
+      // นำทางไปยังหน้า Login
+      navigation.navigate("Login");
+
+      // แสดงข้อความแจ้งเตือนว่าออกจากระบบสำเร็จ
+      Alert.alert("สำเร็จ", "คุณได้ออกจากระบบแล้ว");
+    } catch (error) {
+      console.error("Error during logout", error);
+      Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถออกจากระบบได้");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Motorix Shop</Text>
@@ -136,12 +153,17 @@ const HomeScreen = ({ navigation }) => {
         />
       )}
 
-         <TouchableOpacity 
-             style={styles.checkoutButton} 
-             onPress={() => navigation.navigate('Cart')}
-             >
-            <Text style={styles.checkoutText}>ตะกร้า</Text>
-         </TouchableOpacity>
+      {/* ปุ่มออกจากระบบ */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>ออกจากระบบ</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.checkoutButton} 
+        onPress={() => navigation.navigate('Cart')}
+      >
+        <Text style={styles.checkoutText}>ตะกร้า</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -150,7 +172,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    paddingTop:40,
+    paddingTop: 40,
     backgroundColor: "white",
   },
   header: {
@@ -253,11 +275,22 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 15,
     alignItems: 'center',
-    // marginTop: ,
     elevation: 4, // เงาเพิ่มมิติให้ปุ่ม
   },
   checkoutText: {
     color: "#FFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  logoutButton: {
+    marginTop: 20,
+    backgroundColor: "#d84315",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  logoutText: {
+    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
   },
