@@ -62,7 +62,7 @@ const HomeScreen = ({ navigation }) => {
     try {
       if (userId) {
         await addToCart(userId, productId, quantity);
-        Alert.alert("Product added to cart");
+        //Alert.alert("Product added to cart");
       } else {
         Alert.alert("User not logged in");
       }
