@@ -43,17 +43,17 @@ const AdminScreen = () => {
 
   const renderOrderItem = ({ item }) => (
     <View style={styles.orderItem}>
-      <Text style={styles.orderTitle}>Order ID: {item.id}</Text>
+      <Text style={styles.orderTitle}>รหัสออเดอร์: {item.id}</Text>
       <Text>User ID: {item.user_id}</Text>
-      <Text>Total Price: ${item.total_price}</Text>
-      <Text>Shipping Address: {item.shipping_address}</Text>
-      <Text>Status: {item.status}</Text>
+      <Text>ราคารวม: {item.total_amount} บาท</Text>
+      <Text>ที่อยู่จัดส่ง: {item.shipping_address}</Text>
+      <Text>สถานะ: {item.status}</Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Admin - Orders</Text>
+      <Text style={styles.title}>หน้าจัดการออเดอร์</Text>
       <FlatList
         data={orders}
         keyExtractor={(item, index) => `${item.id}-${index}`}

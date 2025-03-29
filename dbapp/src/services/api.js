@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://10.5.50.228:5000";  // ใช้ URL ที่ตรงกับเซิร์ฟเวอร์ของคุณ
+export const API_URL = "http://10.5.50.228:5000";  // ใช้ URL ที่ตรงกับเซิร์ฟเวอร์ของคุณ
 
 // ฟังก์ชันสำหรับการลงทะเบียนผู้ใช้
 export const registerUser = async (username, password) => {
@@ -119,7 +119,7 @@ export const addmarket = async (item_name ,price,image_url,item_detail,) => {
 
 export const removeFromCart = async (userId, productId) => {
   try {
-    const response = await axios.delete(`http://10.5.50.228:5000/cart/${userId}/item/${productId}`);
+    const response = await axios.delete(`${API_URL}/cart/${userId}/item/${productId}`);
     return response.data; // คืนค่าผลลัพธ์จาก API ถ้าลบสำเร็จ
   } catch (error) {
     console.error("Error removing from cart:", error);

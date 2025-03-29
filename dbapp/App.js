@@ -7,7 +7,6 @@ import HomeScreen from "./src/screen/HomeScreen";
 import AdminScreen from "./src/screen/AdminScreen";
 import CartScreen from "./src/screen/CartScreen";
 import QueueScreen from "./src/screen/QueueScreen";
-import CheckoutScreen from "./src/screen/CheckoutScreen";
 import PaymentScreen from "./src/screen/PaymentScreen";
 import ManageQueueScreen from "./src/screen/ManageQueueScreen";
 const Stack = createStackNavigator();
@@ -45,10 +44,6 @@ const App = () => {
         <Stack.Screen
         name ="Queue"
         component={QueueScreen}
-        />
-        <Stack.Screen
-        name ="Checkout"
-        component={CheckoutScreen}
         />
 
         <Stack.Screen

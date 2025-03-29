@@ -305,7 +305,7 @@ app.post("/place-order", async (req, res) => {
     // บันทึกคำสั่งซื้อในตาราง orders
     const result = await pool.query(
       'INSERT INTO orders (user_id, total_amount, shipping_address, status) VALUES ($1, $2, $3, $4) RETURNING order_id',
-      [userId, totalAmount, shippingAddress, 'Pending']  // สถานะ Pending สำหรับคำสั่งซื้อที่ยังไม่ได้ชำระเงิน
+      [userId, totalAmount, shippingAddress, 'จัดเตรียมสินค้า']  // สถานะ Pending สำหรับคำสั่งซื้อที่ยังไม่ได้ชำระเงิน
     );
 
     const orderId = result.rows[0].order_id;

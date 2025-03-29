@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Image, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { placeOrder, clearcart } from '../services/api'; // อย่าลืมนำเข้า clearcart
+import { placeOrder, clearcart,API_URL } from '../services/api'; // อย่าลืมนำเข้า clearcart
 
 const PaymentScreen = ({ navigation }) => {
     const [cartItems, setCartItems] = useState([]);
@@ -29,7 +29,7 @@ const PaymentScreen = ({ navigation }) => {
         if (!userId) return;
         const getCartItems = async () => {
             try {
-                const response = await fetch(`http://10.5.50.228:5000/cart/${userId}`);
+                const response = await fetch(`${API_URL}/cart/${userId}`);
                 const data = await response.json();
                 if (data.cart) {
                     setCartItems(data.cart);
