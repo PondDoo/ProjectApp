@@ -53,24 +53,31 @@ const PaymentScreen = ({ navigation }) => {
     };
 
     const handlePayment = async () => {
-        try {
-            const orderData = await placeOrder(userId, cartItems, shippingAddress);
-            if (orderData.orderId) {
-                Alert.alert('ยืนยันการชำระเงิน', 'ชำระเงินเสร็จสิ้น');
-                
-                // เรียก cartempty เพื่อเคลียร์ตะกร้าหลังการชำระเงินสำเร็จ
-                await cartempty();
-
-                // นำผู้ใช้กลับไปที่หน้าหลัก
-                navigation.navigate('Home');
-            } else {
-                Alert.alert('Order Failed', 'There was an issue placing your order');
-            }
-        } catch (error) {
-            console.error('Error placing order:', error);
-            Alert.alert('Error', 'There was an issue placing your order');
-        }
-    };
+      // ตรวจสอบว่ามีสินค้าในตะกร้าหรือไม่
+      if (cartItems.length === 0) {
+          Alert.alert('ไม่มีสินค้าในตะกร้า', 'กรุณาเพิ่มสินค้าก่อนทำการชำระเงิน');
+          return; // หยุดการทำงานของฟังก์ชันหากไม่มีสินค้าในตะกร้า
+      }
+  
+      try {
+          const orderData = await placeOrder(userId, cartItems, shippingAddress);
+          if (orderData.orderId) {
+              Alert.alert('ยืนยันการชำระเงิน', 'ชำระเงินเสร็จสิ้น');
+              
+              // เรียก cartempty เพื่อเคลียร์ตะกร้าหลังการชำระเงินสำเร็จ
+              await cartempty();
+  
+              // นำผู้ใช้กลับไปที่หน้าหลัก
+              navigation.navigate('Home');
+          } else {
+              Alert.alert('Order Failed', 'There was an issue placing your order');
+          }
+      } catch (error) {
+          console.error('Error placing order:', error);
+          Alert.alert('Error', 'There was an issue placing your order');
+      }
+  };
+  
 
     return (
         <View style={styles.container}>
