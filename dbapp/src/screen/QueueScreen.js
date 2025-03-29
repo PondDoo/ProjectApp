@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Button, Modal, FlatList, Alert, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Button, Modal, FlatList, Alert, TouchableOpacity,TextInput } from "react-native";
 import { Calendar } from "react-native-calendars";
 import RNPickerSelect from "react-native-picker-select";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -7,10 +7,15 @@ import { Ionicons } from "@expo/vector-icons";
 import icon from "@expo/vector-icons/Ionicons"
 import CustomButton from "../component/custombutton";
 
+
 const QueueScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
+  const [serviceType, setServiceType] = useState(null);
+  const [vehicleRegistration, setVehicleRegistration] = useState("");
+  const [vehicleModel, setVehicleModel] = useState("");
+  const [additionalNotes, setAdditionalNotes] = useState("");
   const [bookedSlots, setBookedSlots] = useState({});
 
   useEffect(() => {
@@ -36,38 +41,11 @@ const QueueScreen = () => {
     }
   };
 
-  const clearBookings = async () => {
-    await AsyncStorage.removeItem("bookedSlots");
-    setBookedSlots({});
-    Alert.alert("ล้างข้อมูล", "การจองทั้งหมดถูกล้างแล้ว!");
-  };
-
-  const cancelBooking = async (date, time) => {
-    if (!bookedSlots[date] || !bookedSlots[date][time]) {
-      Alert.alert("ไม่พบการจอง", `ไม่มีการจองเวลา ${time} ในวันที่ ${date}`);
+  const confirmBooking = () => {
+    if (!selectedDate || !selectedTime || !serviceType || !vehicleRegistration || !vehicleModel) {
+      Alert.alert("โปรดกรอกข้อมูลให้ครบถ้วน");
       return;
     }
-  
-    const updatedBookings = { ...bookedSlots };
-    delete updatedBookings[date][time]; // ลบเวลานั้นออก
-  
-    // ถ้าหลังจากลบแล้ว วันนั้นไม่มีการจองเหลืออยู่ ให้ลบวันออกไปเลย
-    if (Object.keys(updatedBookings[date]).length === 0) {
-      delete updatedBookings[date];
-    }
-  
-    setBookedSlots(updatedBookings);
-    await storeBookings(updatedBookings);
-    Alert.alert("ยกเลิกการจอง", `การจองเวลา ${time} ในวันที่ ${date} ถูกยกเลิกแล้ว!`);
-  };
-
-  const handleDateSelect = (date) => {
-    setSelectedDate(date.dateString);
-    setModalVisible(true);
-  };
-
-  const confirmBooking = () => {
-    if (!selectedDate || !selectedTime) return;
 
     const updatedBookings = { ...bookedSlots };
 
@@ -75,83 +53,102 @@ const QueueScreen = () => {
       updatedBookings[selectedDate] = {};
     }
 
-    // เช็คว่าเวลาโดนจองแล้วหรือยัง
     if (updatedBookings[selectedDate][selectedTime]) {
-      Alert.alert("เวลาถูกจองแล้ว", `เวลา ${selectedTime} ในวันที่ ${selectedDate} ถูกจองแล้ว`);
+      Alert.alert(
+        "เวลาถูกจองแล้ว",
+        `เวลา ${selectedTime} ในวันที่ ${selectedDate} ถูกจองแล้ว`
+      );
       return;
     }
 
-    updatedBookings[selectedDate][selectedTime] = selectedTime;
+    updatedBookings[selectedDate][selectedTime] = {
+      time: selectedTime,
+      service: serviceType,
+      vehicle: `${vehicleRegistration} (${vehicleModel})`,
+      notes: additionalNotes,
+      status: "pending",
+    };
 
     setBookedSlots(updatedBookings);
     storeBookings(updatedBookings);
     setModalVisible(false);
-    Alert.alert("จองสำเร็จ", `คุณได้จองเวลา ${selectedTime} ในวันที่ ${selectedDate}`);
+    Alert.alert(
+      "จองสำเร็จ",
+      `คุณได้จองเวลา ${selectedTime} สำหรับ ${serviceType} ในวันที่ ${selectedDate}`
+    );
   };
 
-  const currentDate = new Date();
-  const formattedCurrentDate = currentDate.toISOString().split("T")[0];
+  const renderBookingItem = ({ item }) => (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>{`บริการ: ${item.service}`}</Text>
+      <Text>{`วันที่: ${item.date}`}</Text>
+      <Text>{`เวลา: ${item.time}`}</Text>
+      <Text>{`สถานะ: ${item.status === "pending" ? "รอการยืนยัน" : "ยืนยันแล้ว"}`}</Text>
+      <TouchableOpacity onPress={() => Alert.alert("รายละเอียดการจอง", JSON.stringify(item))}>
+        <Text style={styles.linkText}>ดูรายละเอียดเพิ่มเติม</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>เลือกวันที่จองคิว</Text>
       <Calendar
-        onDayPress={handleDateSelect}
-        minDate={formattedCurrentDate}
-        markedDates={Object.keys(bookedSlots).reduce((acc, date) => {
-          acc[date] = { selected: true, selectedColor: "blue" };
-          return acc;
-        }, {})}
+        onDayPress={(date) => {
+          setSelectedDate(date.dateString);
+          setModalVisible(true);
+        }}
+      />
+
+      <FlatList
+        data={Object.entries(bookedSlots).flatMap(([date, slots]) =>
+          Object.entries(slots).map(([time, details]) => ({
+            date,
+            time,
+            ...details,
+          }))
+        )}
+        keyExtractor={(item, index) => `${item.date}-${item.time}-${index}`}
+        renderItem={renderBookingItem}
       />
 
       <Modal animationType="slide" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={styles.modalCard}>
             <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
               <Ionicons name="close-circle" size={24} color="red" />
             </TouchableOpacity>
 
-            <Text>เลือกเวลาสำหรับวันที่ {selectedDate}</Text>
+            <Text style={styles.modalTitle}>จองคิวบริการ</Text>
+
+            <Text style={styles.label}>เลือกประเภทบริการ</Text>
+            <RNPickerSelect
+              onValueChange={setServiceType}
+              items={[
+                { label: "ซ่อมรถ", value: "ซ่อมรถ" },
+                { label: "แต่งรถ", value: "แต่งรถ" },
+                { label: "เช็คสภาพรถ", value: "เช็คสภาพรถ" },
+              ]}
+              style={{ inputAndroid: styles.input }}
+            />
+
+            <Text style={styles.label}>ทะเบียนรถ</Text>
+            <TextInput style={styles.input} placeholder="ทะเบียนรถ" onChangeText={setVehicleRegistration} />
+
+            <Text style={styles.label}>รุ่นรถ</Text>
+            <TextInput style={styles.input} placeholder="รุ่นรถ" onChangeText={setVehicleModel} />
+
+            <Text style={styles.label}>เวลา</Text>
             <RNPickerSelect
               onValueChange={setSelectedTime}
-              items={Array.from({ length: 11 }, (_, i) => ({
-                label: `${i + 8}:00`,
-                value: `${i + 8}:00`,
-              }))}
+              items={Array.from({ length: 11 }, (_, i) => ({ label: `${i + 8}:00`, value: `${i + 8}:00` }))}
+              style={{ inputAndroid: styles.input }}
             />
-            <Button title="ยืนยันการจอง" onPress={confirmBooking} disabled={!selectedTime} />
+
+            <Button title="ยืนยันการจอง" onPress={confirmBooking} />
           </View>
         </View>
       </Modal>
-
-      <Text style={styles.title}>ตารางการจอง</Text>
-      {Object.keys(bookedSlots).length > 0 ? (
-        <FlatList
-          data={Object.entries(bookedSlots)}
-          keyExtractor={(item) => item[0]}
-          renderItem={({ item }) => (
-            <View style={styles.bookingItem}>
-              <Text style={styles.bookingText}>📅 {item[0]}</Text>
-              {Object.entries(item[1]).map(([time, value]) => (
-                <View key={time} style={styles.bookingTextContainer}>
-                  <Text style={styles.bookingText}>🕒 {time}</Text>
-                  <TouchableOpacity style={styles.cancelButton} onPress={() => cancelBooking(item[0], time)}>
-                    <Text style={styles.cancelButtonText}>ยกเลิก</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          )}
-        />
-      ) : (
-        <Text style={styles.noBooking}>ยังไม่มีการจอง</Text>
-      )}
-
-      <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.clearButton} onPress={clearBookings}>
-            <Text style={styles.clearButtonText}>ล้างข้อมูล</Text>
-          </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -160,13 +157,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor:"white"
+    backgroundColor: "#FFF7F3",
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 10,
-    marginTop:20,
+    marginBottom: 20,
   },
   modalOverlay: {
     flex: 1,
@@ -174,87 +170,60 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  modalContent: {
-    width: 300,
+  modalCard: {
+    width: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
     padding: 20,
-    backgroundColor: "white",
-    borderRadius: 10,
-    alignItems: "center",
-    position: "relative",
-  },
-  buttonContainer: {
-    position: "absolute",
-    bottom: 20,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
-  
-  clearButton: {
-    backgroundColor: "#F7374F",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    width: "90%", // ทำให้ปุ่มกว้างขึ้น
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3, // สำหรับ Android
+    shadowRadius: 4,
+    elevation: 5,
   },
-  clearButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  
   closeButton: {
     position: "absolute",
     top: 10,
     right: 10,
   },
-  bookingItem: {
-    padding: 10,
-    borderRadius: 10,
-    marginVertical: 5,
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
   },
-  bookingTextContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  bookingText: {
-    fontSize: 16,
-    fontWeight:"600",
-  },
-  noBooking: {
+  label: {
     fontSize: 14,
-    fontStyle: "italic",
-    color: "gray",
+    fontWeight: "600",
+    marginTop: 10,
   },
-  cancelButton: {
-    backgroundColor: "#FF6B6B",
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 5,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  
-  cancelButtonText: {
-    color: "white",
-    fontSize: 14,
+  cardTitle: {
+    fontSize: 16,
     fontWeight: "bold",
+    marginBottom: 5,
   },
-  
+  linkText: {
+    color: "#007BFF",
+    marginTop: 10,
+    textDecorationLine: "underline",
+  },
 });
 
 export default QueueScreen;

@@ -158,7 +158,7 @@ const handleDecreaseQuantity = async (productId) => {
       <View style={styles.summary}>
         <Button
           title="Proceed to Checkout"
-          onPress={() => navigation.navigate('Checkout')}  // ไปยังหน้าชำระเงิน
+          onPress={() => navigation.navigate('Payment')}  // ไปยังหน้าชำระเงิน
         />
       </View>
     </View>

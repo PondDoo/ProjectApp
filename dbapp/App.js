@@ -9,6 +9,7 @@ import CartScreen from "./src/screen/CartScreen";
 import QueueScreen from "./src/screen/QueueScreen";
 import CheckoutScreen from "./src/screen/CheckoutScreen";
 import PaymentScreen from "./src/screen/PaymentScreen";
+import ManageQueueScreen from "./src/screen/ManageQueueScreen";
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -55,6 +56,10 @@ const App = () => {
         component={PaymentScreen}
         />
         
+        <Stack.Screen
+        name = "ManageQueue"
+        component={ManageQueueScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   )
