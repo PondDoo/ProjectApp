@@ -148,3 +148,17 @@ export const decreaseQuantity = async (userId, productId) => {
     throw new Error(error.response?.data?.message || "Error decreasing quantity");
   }
 };
+
+export const clearcart = async (userId) => {
+  try {
+    // เรียก API สำหรับล้างตะกร้า
+    const response = await axios.delete(`${API_URL}/cart/clear/${userId}`);
+    
+    // คืนค่าผลลัพธ์จาก API
+    return response.data; 
+  } catch (error) {
+    // จัดการข้อผิดพลาดที่เกิดขึ้น
+    console.error('Error clearing cart:', error);
+    throw error;  // หรือสามารถคืนค่า error ไปให้ front-end ถ้าจำเป็น
+  }
+};

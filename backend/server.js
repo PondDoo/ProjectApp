@@ -463,3 +463,33 @@ app.put('/cart/:userId/item/:productId/decrease', async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
+// Route สำหรับเคลียร์ตะกร้าของผู้ใช้
+app.delete('/cart/clear/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // ตรวจสอบว่า ตะกร้าของผู้ใช้มีสินค้าหรือไม่
+    const cartCheck = await pool.query(
+      'SELECT * FROM cart WHERE user_id = $1 AND status = $2',
+      [userId, 'pending']
+    );
+
+    if (cartCheck.rows.length === 0) {
+      return res.status(404).json({ message: 'Cart not found for this user' });
+    }
+
+    const cartId = cartCheck.rows[0].cart_id;
+
+    // ลบสินค้าทั้งหมดในตะกร้าที่เป็น 'pending'
+    await pool.query(
+      'DELETE FROM cart_items WHERE cart_id = $1',
+      [cartId]
+    );
+
+    res.status(200).json({ message: 'Cart cleared successfully' });
+  } catch (error) {
+    console.error('Error clearing cart:', error);
+    res.status(500).json({ message: 'Error clearing cart' });
+  }
+});

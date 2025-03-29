@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Image, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { placeOrder } from '../services/api';
+import { placeOrder, clearcart } from '../services/api'; // อย่าลืมนำเข้า clearcart
 
 const PaymentScreen = ({ navigation }) => {
     const [cartItems, setCartItems] = useState([]);
@@ -29,7 +29,7 @@ const PaymentScreen = ({ navigation }) => {
         if (!userId) return;
         const getCartItems = async () => {
             try {
-                const response = await fetch(`http://192.168.125.54:5000/cart/${userId}`);
+                const response = await fetch(`http://10.5.50.228:5000/cart/${userId}`);
                 const data = await response.json();
                 if (data.cart) {
                     setCartItems(data.cart);
@@ -42,11 +42,26 @@ const PaymentScreen = ({ navigation }) => {
         getCartItems();
     }, [userId]);
 
+    // ฟังก์ชันเคลียร์ตะกร้า
+    const cartempty = async () => {
+        try {
+            const response = await clearcart(userId); // เรียกฟังก์ชัน clearcart เพื่อล้างตะกร้า
+            console.log('Cart cleared:', response); // เช็คการลบตะกร้า
+        } catch (error) {
+            console.error('Error clearing cart:', error);
+        }
+    };
+
     const handlePayment = async () => {
         try {
             const orderData = await placeOrder(userId, cartItems, shippingAddress);
             if (orderData.orderId) {
                 Alert.alert('ยืนยันการชำระเงิน', 'ชำระเงินเสร็จสิ้น');
+                
+                // เรียก cartempty เพื่อเคลียร์ตะกร้าหลังการชำระเงินสำเร็จ
+                await cartempty();
+
+                // นำผู้ใช้กลับไปที่หน้าหลัก
                 navigation.navigate('Home');
             } else {
                 Alert.alert('Order Failed', 'There was an issue placing your order');
@@ -92,10 +107,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFF7F3',
     },
     title: {
-        fontSize: 26,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20,
+      fontSize: 26,
+      fontWeight: "bold",
+      textAlign: "center",
+      margin: 15,
     },
     item: {
         flexDirection: "row",
@@ -149,7 +164,6 @@ const styles = StyleSheet.create({
       padding: 10,
       borderRadius: 10,
       alignItems: 'center',
-      // marginTop: ,
       elevation:5
     },
     checkoutText: {
